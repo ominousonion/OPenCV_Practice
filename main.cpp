@@ -26,13 +26,22 @@ int main(int argc, const char** argv)
 		Mat frame_camsrc;
 		Mat frame_camdst;
 		Mat frame_ROI;
+
 		video.read(frame);
 		camera >> frame_camsrc;
 
 		if (frame.rows > 0) {
 			resize(frame_camsrc, frame_camdst, Size(frame.cols / 4, frame.rows / 3));
+			Mat edge;
+			Mat cedge;
+			Mat camdst_blur;
+			cedge.create(frame_camdst.size(), frame_camdst.type());
+			GaussianBlur(frame_camdst, camdst_blur, Size(3, 3), 0, 0);
+			Canny(camdst_blur, edge, 100, 150);
+			cedge = Scalar::all(0);
+			frame_camdst.copyTo(cedge, edge);
 			frame_ROI = frame(Rect(0, 0, frame_camdst.cols, frame_camdst.rows));
-			addWeighted(frame_ROI, 0, frame_camdst, 1, 0, frame_ROI);
+			addWeighted(frame_ROI, 0, cedge, 1, 0, frame_ROI);
 			imshow("Video Frame", frame);
 		}
 		else {
